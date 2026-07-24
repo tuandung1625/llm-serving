@@ -1,0 +1,13 @@
+base_url: http://127.0.0.1:8000
+model: LFM2.5-1.2B-Instruct
+model_path: ./model
+trace_path: sample_trace.json
+output_dir: ./results
+request_timeout_s: 180
+connect_timeout_s: 10
+max_connections: 128
+temperature: 0.0
+top_p: 1.0
+include_output_text: false
+tokenizer_required: true
+

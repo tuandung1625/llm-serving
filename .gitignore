@@ -1,0 +1,20 @@
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Model weights must be downloaded locally and mounted read-only.
+model/
+*.safetensors
+*.bin
+*.pt
+*.gguf
+
+# Benchmark artifacts.
+results/*
+!results/.gitkeep
+*.log
+

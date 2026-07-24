@@ -1,0 +1,17 @@
+{
+  "name": "sample_multiturn_prefix_cache_trace",
+  "description": "Small deterministic trace for local baseline validation. Synthetic text is generated from token-count fields.",
+  "num_conversations": 4,
+  "user_turns_per_conversation": 3,
+  "total_request": 12,
+  "shared_system_prefix_tokens": 256,
+  "per_conversation_prefix_tokens": 128,
+  "new_user_tokens_per_turn": 64,
+  "output_tokens_per_turn_pinned": 64,
+  "arrival": {
+    "type": "fixed_interval",
+    "interval_ms": 250
+  },
+  "add_per_conversation_prefix_to_first_turn": true
+}
+
