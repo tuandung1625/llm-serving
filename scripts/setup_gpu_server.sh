@@ -31,13 +31,14 @@ install_base_packages() {
   export DEBIAN_FRONTEND=noninteractive
   log "install base packages"
   apt update
-  apt install -y ca-certificates curl gnupg2 python3 python3-venv python3-pip
+  apt install -y ca-certificates curl git gnupg2 python3 python3-venv python3-pip
 }
 
 install_docker() {
-  if command -v docker >/dev/null 2>&1; then
-    log "docker da co san"
+  if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
+    log "docker va compose da co san"
     docker --version || true
+    docker compose version || true
     return
   fi
 
@@ -149,10 +150,8 @@ Setup xong. Chay tiep:
 
 cd $PROJECT_ROOT
 . .venv/bin/activate
-docker compose --env-file configs/baseline.env -f docker-compose.yml -f docker-compose.local.yml up -d
-python scripts/healthcheck.py --url http://127.0.0.1:$PORT/health
-python scripts/smoke_test.py --base-url http://127.0.0.1:$PORT --model LFM2.5-1.2B-Instruct
-python scripts/benchmark.py --config configs/benchmark.yaml --trace configs/sample_trace.json
+bash scripts/start_vllm_server.sh
+bash scripts/run_sample_benchmark.sh
 EOF
 }
 
@@ -171,4 +170,3 @@ main() {
 }
 
 main "$@"
-

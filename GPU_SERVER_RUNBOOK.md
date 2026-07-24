@@ -1,68 +1,49 @@
-# Huong Dan Nhanh Chuyen Project Len Server GPU Va Chay Test
+# Huong Dan Nhanh Chay Tren Server GPU Bang GitHub
 
-Runbook nay giu cac buoc co ban nhat. Ban co 2 file chinh:
-
-1. `scripts/package_for_server.sh`
-2. `scripts/setup_gpu_server.sh`
-
-Gia dinh:
-
-- Ban vao duoc server bang SSH.
-- Server co NVIDIA GPU va `nvidia-smi` chay duoc.
-- Ban khong dung `sudo`, chi dung `apt`.
-- Ban chay server bang user co quyen cai package, thuong la `root`.
-
-## 1. Dat bien o may local
-
-```bash
-export SERVER_USER=root
-export SERVER_HOST="YOUR_SERVER_PUBLIC_IP_OR_DNS"
-export SERVER_PORT=22
-export PROJECT_NAME=llm-serving-baseline
-```
-
-## 2. Nen project o local
+## 1. SSH vao server
 
 Tren may local:
 
 ```bash
-cd /root/Project/Viettel
-ARCHIVE="$(bash llm-serving-baseline/scripts/package_for_server.sh)"
-ls -lh "$ARCHIVE"
-scp -P "$SERVER_PORT" "$ARCHIVE" "$SERVER_USER@$SERVER_HOST:~/"
+ssh root@YOUR_SERVER_PUBLIC_IP
 ```
 
-## 3. Kiem tra server GPU
-
-SSH vao server:
-
-```bash
-ssh -p "$SERVER_PORT" "$SERVER_USER@$SERVER_HOST"
-```
-
-Tren server:
+Tren server, kiem tra GPU:
 
 ```bash
 whoami
 nvidia-smi
-nproc
-free -h
 df -h
+free -h
 ```
 
-Neu `nvidia-smi` khong chay, doi server/image khac truoc khi lam tiep.
+Neu `nvidia-smi` khong chay, doi image/server truoc.
 
-## 4. Giai nen project tren server
+## 2. Cai git va clone repo
+
+Tren server:
 
 ```bash
+export DEBIAN_FRONTEND=noninteractive
+apt update
+apt install -y git ca-certificates curl
+
 mkdir -p ~/viettel
-tar -xzf ~/llm-serving-baseline_*.tar.gz -C ~/viettel
-cd ~/viettel/llm-serving-baseline
+cd ~/viettel
+git clone https://github.com/tuandung1625/llm-serving.git
+cd llm-serving
 ```
 
-## 5. Chay script setup mot lan
+Neu repo da clone roi va muon cap nhat code:
 
-Neu can HF token:
+```bash
+cd ~/viettel/llm-serving
+git pull
+```
+
+## 3. Chay setup mot lan
+
+Neu Hugging Face can token:
 
 ```bash
 export HF_TOKEN="YOUR_HF_TOKEN"
@@ -71,91 +52,98 @@ export HF_TOKEN="YOUR_HF_TOKEN"
 Chay setup:
 
 ```bash
+cd ~/viettel/llm-serving
 bash scripts/setup_gpu_server.sh
+```
+
+Script nay se tu lam cac viec co ban:
+
+- cai Python, Docker, Docker Compose plugin
+- start `dockerd` tren may khong co `systemd`
+- cai NVIDIA Container Toolkit
+- test GPU trong Docker bang image `vllm/vllm-openai:v0.22.1`
+- tao `.venv` va cai benchmark dependencies
+- download `LiquidAI/LFM2.5-1.2B-Instruct` vao `./model`
+- validate GPU, Docker, model dir, disk, port `8000`
+
+Neu script fail o Docker daemon, xem log:
+
+```bash
+tail -100 /var/log/dockerd.log
+```
+
+## 4. Start vLLM va smoke test
+
+```bash
+cd ~/viettel/llm-serving
+bash scripts/start_vllm_server.sh
 ```
 
 Script nay se:
 
-- cai Docker, Python, NVIDIA Container Toolkit
-- start `dockerd`
-- test Docker va GPU
-- tao `.venv` va cai benchmark dependencies
-- download model vao `./model`
-- chay validation
+- start container vLLM bang `docker compose`
+- doi `/health`
+- chay streaming smoke test
 
-## 6. Chay server vLLM
+Xem log server:
 
 ```bash
-cd ~/viettel/llm-serving-baseline
-docker compose \
-  --env-file configs/baseline.env \
-  -f docker-compose.yml \
-  -f docker-compose.local.yml \
-  up -d
-```
-
-Xem log:
-
-```bash
+cd ~/viettel/llm-serving
 docker compose -f docker-compose.yml -f docker-compose.local.yml logs -f lfm-vllm
 ```
 
-Health check:
+## 5. Chay benchmark mau
 
 ```bash
-cd ~/viettel/llm-serving-baseline
-. .venv/bin/activate
-python scripts/healthcheck.py --url http://127.0.0.1:8000/health
+cd ~/viettel/llm-serving
+bash scripts/run_sample_benchmark.sh
 ```
 
-## 7. Smoke test
+Ket qua nam trong:
 
-```bash
-cd ~/viettel/llm-serving-baseline
-. .venv/bin/activate
-python scripts/smoke_test.py \
-  --base-url http://127.0.0.1:8000 \
-  --model LFM2.5-1.2B-Instruct
+```text
+results/<timestamp>_baseline/
 ```
 
-## 8. Chay benchmark
-
-```bash
-cd ~/viettel/llm-serving-baseline
-. .venv/bin/activate
-python scripts/benchmark.py \
-  --config configs/benchmark.yaml \
-  --trace configs/sample_trace.json
-```
-
-Tinh lai ERS:
-
-```bash
-EXP_DIR=$(ls -td results/*_baseline* | head -1)
-python scripts/calculate_ers.py "$EXP_DIR/requests.json"
-```
-
-## 9. Lay results ve local
+## 6. Lay results ve local
 
 Tren server:
 
 ```bash
-cd ~/viettel/llm-serving-baseline
+cd ~/viettel/llm-serving
 tar -czf results.tar.gz results
 ```
 
 Tren may local:
 
 ```bash
-mkdir -p /root/Project/Viettel/results_from_server
-scp -P "$SERVER_PORT" \
-  "$SERVER_USER@$SERVER_HOST:~/viettel/llm-serving-baseline/results.tar.gz" \
-  /root/Project/Viettel/results_from_server/
+scp root@YOUR_SERVER_PUBLIC_IP:~/viettel/llm-serving/results.tar.gz .
 ```
 
-## 10. Stop server
+## 7. Stop server
 
 ```bash
-cd ~/viettel/llm-serving-baseline
+cd ~/viettel/llm-serving
 docker compose -f docker-compose.yml -f docker-compose.local.yml down
 ```
+
+## Ban copy nhanh
+
+Tren server, sau khi SSH:
+
+```bash
+export DEBIAN_FRONTEND=noninteractive
+apt update
+apt install -y git ca-certificates curl
+mkdir -p ~/viettel
+cd ~/viettel
+git clone https://github.com/tuandung1625/llm-serving.git
+cd llm-serving
+export HF_TOKEN="YOUR_HF_TOKEN"
+bash scripts/setup_gpu_server.sh
+bash scripts/start_vllm_server.sh
+bash scripts/run_sample_benchmark.sh
+```
+
+Neu model khong can token thi bo dong `export HF_TOKEN=...`.
+

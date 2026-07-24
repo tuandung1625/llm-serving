@@ -1,4 +1,4 @@
-.PHONY: help venv install download validate up logs health smoke benchmark monitor ers down build test package-server server-setup
+.PHONY: help venv install download validate up logs health smoke benchmark monitor ers down build test package-server server-setup server-start sample-benchmark
 
 PYTHON ?= python3
 VENV ?= .venv
@@ -12,6 +12,8 @@ help:
 		'Targets:' \
 		'  package-server  Create tar.gz for uploading to a GPU server' \
 		'  server-setup    Run one-shot GPU server setup on the server itself' \
+		'  server-start    Start vLLM, wait for health, and run smoke test' \
+		'  sample-benchmark Run sample trace and recalculate ERS' \
 		'  venv       Create Python virtual environment' \
 		'  install    Install benchmark dependencies' \
 		'  download   Download LiquidAI/LFM2.5-1.2B-Instruct into ./model' \
@@ -32,6 +34,12 @@ package-server:
 
 server-setup:
 	bash scripts/setup_gpu_server.sh
+
+server-start:
+	bash scripts/start_vllm_server.sh
+
+sample-benchmark:
+	bash scripts/run_sample_benchmark.sh
 
 venv:
 	$(PYTHON) -m venv $(VENV)
