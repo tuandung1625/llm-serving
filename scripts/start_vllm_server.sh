@@ -17,7 +17,13 @@ if ! docker info >/dev/null 2>&1; then
   mkdir -p /var/run /var/lib/docker /var/log
   pkill dockerd 2>/dev/null || true
   pkill containerd 2>/dev/null || true
-  nohup dockerd --host=unix:///var/run/docker.sock --iptables=false > /var/log/dockerd.log 2>&1 &
+  nohup dockerd \
+    --host=unix:///var/run/docker.sock \
+    --iptables=false \
+    --bridge=none \
+    --ip-forward=false \
+    --ip-masq=false \
+    > /var/log/dockerd.log 2>&1 &
   sleep 8
 fi
 
@@ -33,14 +39,14 @@ if [[ ! -d model ]]; then
 fi
 
 log "start vLLM docker compose"
-docker compose --env-file configs/baseline.env -f docker-compose.yml -f docker-compose.local.yml up -d
+docker compose --env-file configs/baseline.env -f docker-compose.server.yml up -d
 
 log "wait health http://127.0.0.1:$PORT/health"
 . .venv/bin/activate
 deadline=$((SECONDS + HEALTH_TIMEOUT_S))
 until python scripts/healthcheck.py --url "http://127.0.0.1:$PORT/health" >/dev/null 2>&1; do
   if (( SECONDS >= deadline )); then
-    docker compose -f docker-compose.yml -f docker-compose.local.yml logs --tail=200 lfm-vllm >&2 || true
+    docker compose -f docker-compose.server.yml logs --tail=200 lfm-vllm >&2 || true
     printf '[server][error] health check timeout sau %ss\n' "$HEALTH_TIMEOUT_S" >&2
     exit 1
   fi
@@ -55,10 +61,9 @@ cat <<EOF
 Server da san sang.
 
 Logs:
-docker compose -f docker-compose.yml -f docker-compose.local.yml logs -f lfm-vllm
+docker compose -f docker-compose.server.yml logs -f lfm-vllm
 
 Benchmark:
 . .venv/bin/activate
 python scripts/benchmark.py --config configs/benchmark.yaml --trace configs/sample_trace.json
 EOF
-

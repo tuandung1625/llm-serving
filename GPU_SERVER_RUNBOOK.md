@@ -72,6 +72,14 @@ Neu script fail o Docker daemon, xem log:
 tail -100 /var/log/dockerd.log
 ```
 
+Neu log co `Failed to create bridge docker0`, pull code moi roi chay lai:
+
+```bash
+cd ~/viettel/llm-serving
+git pull
+bash scripts/setup_gpu_server.sh
+```
+
 ## 4. Start vLLM va smoke test
 
 ```bash
@@ -89,7 +97,7 @@ Xem log server:
 
 ```bash
 cd ~/viettel/llm-serving
-docker compose -f docker-compose.yml -f docker-compose.local.yml logs -f lfm-vllm
+docker compose -f docker-compose.server.yml logs -f lfm-vllm
 ```
 
 ## 5. Chay benchmark mau
@@ -124,7 +132,7 @@ scp root@YOUR_SERVER_PUBLIC_IP:~/viettel/llm-serving/results.tar.gz .
 
 ```bash
 cd ~/viettel/llm-serving
-docker compose -f docker-compose.yml -f docker-compose.local.yml down
+docker compose -f docker-compose.server.yml down
 ```
 
 ## Ban copy nhanh
@@ -146,4 +154,3 @@ bash scripts/run_sample_benchmark.sh
 ```
 
 Neu model khong can token thi bo dong `export HF_TOKEN=...`.
-

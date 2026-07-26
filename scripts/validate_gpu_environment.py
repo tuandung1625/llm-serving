@@ -145,6 +145,8 @@ def _check_docker_gpu(cuda_check_image: str, failures: list[str]) -> None:
         "--rm",
         "--gpus",
         "all",
+        "--network",
+        "none",
         "--entrypoint",
         "python3",
         cuda_check_image,
@@ -197,4 +199,3 @@ def _format_gb(num_bytes: int) -> str:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

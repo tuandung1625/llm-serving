@@ -66,7 +66,13 @@ start_dockerd() {
   pkill containerd 2>/dev/null || true
 
   log "start dockerd"
-  nohup dockerd --host=unix:///var/run/docker.sock --iptables=false > /var/log/dockerd.log 2>&1 &
+  nohup dockerd \
+    --host=unix:///var/run/docker.sock \
+    --iptables=false \
+    --bridge=none \
+    --ip-forward=false \
+    --ip-masq=false \
+    > /var/log/dockerd.log 2>&1 &
   sleep 8
 
   if docker info >/dev/null 2>&1; then
@@ -77,7 +83,14 @@ start_dockerd() {
   log "dockerd mode mac dinh fail, thu vfs"
   pkill dockerd 2>/dev/null || true
   pkill containerd 2>/dev/null || true
-  nohup dockerd --host=unix:///var/run/docker.sock --iptables=false --storage-driver=vfs > /var/log/dockerd.log 2>&1 &
+  nohup dockerd \
+    --host=unix:///var/run/docker.sock \
+    --iptables=false \
+    --bridge=none \
+    --ip-forward=false \
+    --ip-masq=false \
+    --storage-driver=vfs \
+    > /var/log/dockerd.log 2>&1 &
   sleep 8
 
   docker info >/dev/null 2>&1 || {
@@ -111,7 +124,7 @@ install_nvidia_toolkit() {
 verify_docker_gpu() {
   log "verify gpu in docker"
   docker pull vllm/vllm-openai:v0.22.1
-  docker run --rm --gpus all --entrypoint python3 vllm/vllm-openai:v0.22.1 \
+  docker run --rm --gpus all --network=none --entrypoint python3 vllm/vllm-openai:v0.22.1 \
     -c "import torch; assert torch.cuda.is_available(); print(torch.cuda.get_device_name(0))"
 }
 
