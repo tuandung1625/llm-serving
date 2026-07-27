@@ -1,4 +1,4 @@
-.PHONY: help venv install download validate up logs health smoke benchmark monitor ers down build test package-server server-setup server-start sample-benchmark
+.PHONY: help venv install download validate up logs health smoke benchmark monitor ers final-score down build test package-server server-setup server-start sample-benchmark
 
 PYTHON ?= python3
 VENV ?= .venv
@@ -25,6 +25,7 @@ help:
 		'  benchmark  Run multi-turn benchmark' \
 		'  monitor    Collect GPU metrics until interrupted' \
 		'  ers        Recalculate ERS from REQUESTS_FILE=results/.../requests.json' \
+		'  final-score Calculate final score with BASELINE_ACC and SUBMISSION_ACC' \
 		'  down       Stop local server' \
 		'  build      Build local submission image' \
 		'  test       Run unit tests'
@@ -74,6 +75,9 @@ monitor:
 
 ers:
 	$(PY) scripts/calculate_ers.py $(REQUESTS_FILE)
+
+final-score:
+	$(PY) scripts/calculate_final_score.py --aggregate-json $(AGGREGATE_FILE) --baseline-accuracy $(BASELINE_ACC) --submission-accuracy $(SUBMISSION_ACC)
 
 down:
 	docker compose -f docker-compose.yml -f docker-compose.local.yml down

@@ -11,6 +11,8 @@ F_TPOT_MS = 1.0
 C_TPOT_MS = 10.0
 GAMMA = 2.0
 WEIGHT_TTFT = 0.5
+ACCURACY_DELTA_FREE = 0.10
+ACCURACY_DELTA_ZERO = 0.16
 
 
 def clamp(value: float, lower: float = 0.0, upper: float = 1.0) -> float:
@@ -38,6 +40,33 @@ def request_score(
     if error or timeout or output_token_count <= 0 or ttft_ms is None or tpot_ms is None:
         return 0.0
     return WEIGHT_TTFT * ttft_component_score(ttft_ms) + (1.0 - WEIGHT_TTFT) * tpot_component_score(tpot_ms)
+
+
+def accuracy_penalty(delta: float) -> float:
+    if delta <= ACCURACY_DELTA_FREE:
+        return 1.0
+    if delta >= ACCURACY_DELTA_ZERO:
+        return 0.0
+    return 1.0 - ((delta - ACCURACY_DELTA_FREE) / (ACCURACY_DELTA_ZERO - ACCURACY_DELTA_FREE))
+
+
+def final_submission_score(ers: float, baseline_accuracy: float, submission_accuracy: float) -> dict[str, float]:
+    if not 0.0 <= ers <= 1.0:
+        raise ValueError("ers must be in [0, 1]")
+    if not 0.0 <= baseline_accuracy <= 1.0:
+        raise ValueError("baseline_accuracy must be in [0, 1]")
+    if not 0.0 <= submission_accuracy <= 1.0:
+        raise ValueError("submission_accuracy must be in [0, 1]")
+    delta = baseline_accuracy - submission_accuracy
+    penalty = accuracy_penalty(delta)
+    return {
+        "ers": ers,
+        "baseline_accuracy": baseline_accuracy,
+        "submission_accuracy": submission_accuracy,
+        "accuracy_delta": delta,
+        "accuracy_penalty": penalty,
+        "final_score": 100.0 * ers * penalty,
+    }
 
 
 def calculate_tpot_ms(
@@ -107,4 +136,3 @@ def aggregate_results(
 
 def aggregate_to_dict(metrics: AggregateMetrics) -> dict[str, object]:
     return asdict(metrics)
-

@@ -123,7 +123,14 @@ install_nvidia_toolkit() {
 
 verify_docker_gpu() {
   log "verify gpu in docker"
-  docker pull vllm/vllm-openai:v0.22.1
+  local pull_log="/tmp/vllm_image_pull.log"
+  if ! docker pull vllm/vllm-openai:v0.22.1 2>&1 | tee "$pull_log"; then
+    if grep -Eqi "unshare: operation not permitted|failed to extract layer.*operation not permitted|failed to mount.*operation not permitted|failed to unmount.*operation not permitted" "$pull_log"; then
+      die "Docker pull fail vi server bi chan unshare/mount. Day thuong la GPU container/LXC khong du capability de chay Docker daemon. Hay thue VM/bare-metal co Docker support, hoac bat privileged/Docker-in-Docker tren provider."
+    fi
+    die "docker pull vllm/vllm-openai:v0.22.1 fail, xem $pull_log"
+  fi
+
   docker run --rm --gpus all --network=none --entrypoint python3 vllm/vllm-openai:v0.22.1 \
     -c "import torch; assert torch.cuda.is_available(); print(torch.cuda.get_device_name(0))"
 }

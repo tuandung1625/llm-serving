@@ -3,7 +3,9 @@ from __future__ import annotations
 import math
 
 from benchmark.metrics import (
+    accuracy_penalty,
     aggregate_results,
+    final_submission_score,
     request_score,
     tpot_component_score,
     ttft_component_score,
@@ -75,6 +77,25 @@ def test_ers_aggregation() -> None:
     assert math.isclose(aggregate.ers, 0.5)
 
 
+def test_accuracy_penalty_free_region() -> None:
+    assert accuracy_penalty(0.10) == 1.0
+
+
+def test_accuracy_penalty_linear_region() -> None:
+    assert math.isclose(accuracy_penalty(0.13), 0.5)
+
+
+def test_accuracy_penalty_zero_region() -> None:
+    assert accuracy_penalty(0.16) == 0.0
+
+
+def test_final_submission_score() -> None:
+    payload = final_submission_score(ers=0.72, baseline_accuracy=0.40, submission_accuracy=0.37)
+    assert math.isclose(payload["accuracy_delta"], 0.03)
+    assert payload["accuracy_penalty"] == 1.0
+    assert math.isclose(payload["final_score"], 72.0)
+
+
 def _result(
     request_id: int,
     *,
@@ -109,4 +130,3 @@ def _result(
         benchmark_timestamp="2026-07-24T00:00:00Z",
         generated_text="hello",
     )
-
