@@ -1,0 +1,16 @@
+{
+  "name": "golden_c_high_concurrency",
+  "description": "High-concurrency trace for scheduler, queueing, max-num-seqs, and TTFT stress.",
+  "num_conversations": 48,
+  "user_turns_per_conversation": 2,
+  "total_request": 96,
+  "shared_system_prefix_tokens": 256,
+  "per_conversation_prefix_tokens": 128,
+  "new_user_tokens_per_turn": 64,
+  "output_tokens_per_turn_pinned": 64,
+  "arrival": {
+    "type": "fixed_interval",
+    "interval_ms": 20
+  },
+  "add_per_conversation_prefix_to_first_turn": true
+}

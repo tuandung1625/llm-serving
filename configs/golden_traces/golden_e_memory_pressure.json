@@ -1,0 +1,16 @@
+{
+  "name": "golden_e_memory_pressure",
+  "description": "Longer context trace for memory pressure, preemption, max-model-len, and FP8 KV checks.",
+  "num_conversations": 8,
+  "user_turns_per_conversation": 6,
+  "total_request": 48,
+  "shared_system_prefix_tokens": 4096,
+  "per_conversation_prefix_tokens": 2048,
+  "new_user_tokens_per_turn": 256,
+  "output_tokens_per_turn_pinned": 128,
+  "arrival": {
+    "type": "fixed_interval",
+    "interval_ms": 200
+  },
+  "add_per_conversation_prefix_to_first_turn": true
+}

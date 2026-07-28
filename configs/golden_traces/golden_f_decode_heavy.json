@@ -1,0 +1,16 @@
+{
+  "name": "golden_f_decode_heavy",
+  "description": "Decode-heavy trace for TPOT and output-token throughput comparison.",
+  "num_conversations": 16,
+  "user_turns_per_conversation": 3,
+  "total_request": 48,
+  "shared_system_prefix_tokens": 256,
+  "per_conversation_prefix_tokens": 128,
+  "new_user_tokens_per_turn": 64,
+  "output_tokens_per_turn_pinned": 256,
+  "arrival": {
+    "type": "fixed_interval",
+    "interval_ms": 100
+  },
+  "add_per_conversation_prefix_to_first_turn": true
+}

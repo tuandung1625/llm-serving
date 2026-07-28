@@ -1,0 +1,5 @@
+services:
+  model:
+    # Local rented-GPU testing only. The official evaluator provides /model.
+    volumes:
+      - ./llm-serving-baseline/model:/model:ro

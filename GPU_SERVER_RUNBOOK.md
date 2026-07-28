@@ -72,14 +72,6 @@ Neu script fail o Docker daemon, xem log:
 tail -100 /var/log/dockerd.log
 ```
 
-Neu log co `Failed to create bridge docker0`, pull code moi roi chay lai:
-
-```bash
-cd ~/viettel/llm-serving
-git pull
-bash scripts/setup_gpu_server.sh
-```
-
 ## 4. Start vLLM va smoke test
 
 ```bash

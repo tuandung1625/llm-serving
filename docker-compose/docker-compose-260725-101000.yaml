@@ -1,0 +1,64 @@
+services:
+  model:
+    image: vllm/vllm-openai:nightly
+
+    entrypoint:
+      - python3 # Don't change this to vllm-server
+      - -m # Don't change this to vllm-server
+      - vllm.entrypoints.openai.api_server # Don't change this to vllm-server
+
+    command:
+      - --model=/model # Don't change this to vllm-server
+      - --served-model-name=LFM2.5-1.2B-Instruct # Don't change this to vllm-server
+      - --host=0.0.0.0 # Don't change this to vllm-server
+      - --port=8000 # Don't change this to vllm-server
+
+      # FP8 weights and attention KV cache.
+      - --dtype=bfloat16
+      - --quantization=fp8
+      - --kv-cache-dtype=fp8
+
+      - --tensor-parallel-size=1
+      - --gpu-memory-utilization=0.92
+
+      - --max-model-len=32768
+
+      # Balanced TTFT/TPOT configuration.
+      - --max-num-seqs=32
+      - --max-num-batched-tokens=12288
+
+      # LFM2 ShortConv prefix caching requires align mode.
+      - --enable-prefix-caching
+      - --mamba-cache-mode=align
+      - --mamba-cache-dtype=auto
+      - --enable-chunked-prefill
+
+      # Overlap CPU scheduling with GPU execution.
+      - --async-scheduling
+      - --performance-mode=interactivity
+
+      # Faster deterministic prefix hashing.
+      - --prefix-caching-hash-algo=sha256
+
+      # Reduce CPU overhead.
+      - --no-enable-log-requests
+      - --disable-log-stats
+
+    environment:
+      OMP_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+      TOKENIZERS_PARALLELISM: "false"
+      PYTHONUNBUFFERED: "1"
+
+    ports:
+      - "8000:8000"
+
+    shm_size: "2g"
+
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]

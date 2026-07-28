@@ -1,0 +1,16 @@
+{
+  "name": "golden_a_sanity",
+  "description": "Small correctness trace: streaming, history, non-zero output, basic ERS.",
+  "num_conversations": 2,
+  "user_turns_per_conversation": 2,
+  "total_request": 4,
+  "shared_system_prefix_tokens": 128,
+  "per_conversation_prefix_tokens": 64,
+  "new_user_tokens_per_turn": 32,
+  "output_tokens_per_turn_pinned": 32,
+  "arrival": {
+    "type": "fixed_interval",
+    "interval_ms": 500
+  },
+  "add_per_conversation_prefix_to_first_turn": true
+}

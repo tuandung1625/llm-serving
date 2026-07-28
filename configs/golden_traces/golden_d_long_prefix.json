@@ -1,0 +1,16 @@
+{
+  "name": "golden_d_long_prefix",
+  "description": "Long shared and per-conversation prefix trace for prefix-cache and Mamba-cache behavior.",
+  "num_conversations": 16,
+  "user_turns_per_conversation": 5,
+  "total_request": 80,
+  "shared_system_prefix_tokens": 2048,
+  "per_conversation_prefix_tokens": 1024,
+  "new_user_tokens_per_turn": 128,
+  "output_tokens_per_turn_pinned": 96,
+  "arrival": {
+    "type": "fixed_interval",
+    "interval_ms": 150
+  },
+  "add_per_conversation_prefix_to_first_turn": true
+}

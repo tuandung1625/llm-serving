@@ -1,0 +1,18 @@
+services:
+  model:
+    # Approximate the official online evaluation container limits:
+    # 1x H200 MIG slice, 18GB VRAM provided by the platform, 3 CPU cores, 8GB RAM.
+    #
+    # GPU VRAM cannot be capped accurately by Docker Compose on a full RTX 4090.
+    # Use vLLM memory flags such as --gpu-memory-utilization and --max-model-len
+    # to stay inside the official 18GB MIG budget.
+    cpus: 3.0
+    mem_limit: 8g
+    memswap_limit: 8g
+    shm_size: "2g"
+    environment:
+      OMP_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+      TOKENIZERS_PARALLELISM: "false"
+      NVIDIA_VISIBLE_DEVICES: "all"
+      NVIDIA_DRIVER_CAPABILITIES: "compute,utility"

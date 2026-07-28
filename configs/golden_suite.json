@@ -1,0 +1,40 @@
+{
+  "name": "golden_suite_v1",
+  "description": "Local synthetic golden suite for ranking vLLM Docker Compose configs. This is not the BTC official trace.",
+  "scoring": {
+    "golden_score": "weighted_mean_ers",
+    "fail_policy": "a trace with missing aggregate or failed run contributes 0 for its weight"
+  },
+  "traces": [
+    {
+      "id": "golden_a_sanity",
+      "path": "configs/golden_traces/golden_a_sanity.json",
+      "weight": 0.05
+    },
+    {
+      "id": "golden_b_balanced",
+      "path": "configs/golden_traces/golden_b_balanced.json",
+      "weight": 0.35
+    },
+    {
+      "id": "golden_c_high_concurrency",
+      "path": "configs/golden_traces/golden_c_high_concurrency.json",
+      "weight": 0.20
+    },
+    {
+      "id": "golden_d_long_prefix",
+      "path": "configs/golden_traces/golden_d_long_prefix.json",
+      "weight": 0.20
+    },
+    {
+      "id": "golden_e_memory_pressure",
+      "path": "configs/golden_traces/golden_e_memory_pressure.json",
+      "weight": 0.10
+    },
+    {
+      "id": "golden_f_decode_heavy",
+      "path": "configs/golden_traces/golden_f_decode_heavy.json",
+      "weight": 0.10
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "name": "golden_b_balanced",
+  "description": "Main balanced trace for comparing Docker Compose serving configs.",
+  "num_conversations": 16,
+  "user_turns_per_conversation": 4,
+  "total_request": 64,
+  "shared_system_prefix_tokens": 512,
+  "per_conversation_prefix_tokens": 256,
+  "new_user_tokens_per_turn": 128,
+  "output_tokens_per_turn_pinned": 128,
+  "arrival": {
+    "type": "poisson",
+    "rate_per_second": 8,
+    "seed": 260725
+  },
+  "add_per_conversation_prefix_to_first_turn": true
+}
