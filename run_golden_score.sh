@@ -3,19 +3,19 @@ set -euo pipefail
 
 if [ "$#" -lt 1 ]; then
   echo "Usage:"
-  echo "  bash scripts/run_golden_score.sh <docker-compose-file>"
+  echo "  bash run_golden_score.sh <docker-compose-file>"
   echo
   echo "Example:"
-  echo "  bash scripts/run_golden_score.sh docker-compose-260725-101045-rtx4090-mimic-h200mig.yaml"
+  echo "  bash run_golden_score.sh docker-compose/docker-compose-260725-101045-rtx4090-mimic-h200mig.yaml"
   exit 2
 fi
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-BASELINE_DIR="$ROOT_DIR/llm-serving-baseline"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BASELINE_DIR="$ROOT_DIR"
 COMPOSE_FILE="$1"
 COMPOSE_PATH="$ROOT_DIR/$COMPOSE_FILE"
-LIMIT_FILE="$ROOT_DIR/docker-compose-260725-h200mig-limits.yaml"
-LOCAL_MODEL_FILE="$ROOT_DIR/docker-compose-260725-local-model.yaml"
+LIMIT_FILE="$ROOT_DIR/docker-compose/docker-compose-260725-h200mig-limits.yaml"
+LOCAL_MODEL_FILE="$ROOT_DIR/docker-compose/docker-compose-260725-local-model.yaml"
 SUITE_PATH="$BASELINE_DIR/configs/golden_suite.json"
 RUN_ID="$(date -u +%Y%m%dT%H%M%SZ)_$(basename "$COMPOSE_FILE" .yaml)"
 RESULTS_ROOT="$BASELINE_DIR/results/golden_runs/$RUN_ID"
