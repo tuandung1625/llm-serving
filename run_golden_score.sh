@@ -23,7 +23,8 @@ SERVER_START_TIMEOUT_S="${SERVER_START_TIMEOUT_S:-1800}"
 HEALTH_URL="${HEALTH_URL:-http://127.0.0.1:8000/health}"
 BENCHMARK_CONFIG="${BENCHMARK_CONFIG:-configs/benchmark.yaml}"
 REQUEST_TIMEOUT_S="${REQUEST_TIMEOUT_S:-240}"
-COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-golden_${RUN_ID//[^a-zA-Z0-9]/_}}"
+SAFE_RUN_ID="$(printf '%s' "$RUN_ID" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9_-]/_/g')"
+COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-golden_${SAFE_RUN_ID}}"
 
 if [ ! -f "$COMPOSE_PATH" ]; then
   echo "[golden][error] compose file not found: $COMPOSE_PATH" >&2
