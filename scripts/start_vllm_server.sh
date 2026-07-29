@@ -5,6 +5,7 @@ PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PORT="${PORT:-8000}"
 MODEL_NAME="${MODEL_NAME:-LFM2.5-1.2B-Instruct}"
 HEALTH_TIMEOUT_S="${HEALTH_TIMEOUT_S:-900}"
+SERVER_COMPOSE_FILE="${SERVER_COMPOSE_FILE:-docker-compose/docker-compose.server.yml}"
 
 log() {
   printf '[server] %s\n' "$*"
@@ -39,14 +40,14 @@ if [[ ! -d model ]]; then
 fi
 
 log "start vLLM docker compose"
-docker compose --env-file configs/baseline.env -f docker-compose.server.yml up -d
+docker compose --env-file configs/baseline.env -f "$SERVER_COMPOSE_FILE" up -d
 
 log "wait health http://127.0.0.1:$PORT/health"
 . .venv/bin/activate
 deadline=$((SECONDS + HEALTH_TIMEOUT_S))
 until python scripts/healthcheck.py --url "http://127.0.0.1:$PORT/health" >/dev/null 2>&1; do
   if (( SECONDS >= deadline )); then
-    docker compose -f docker-compose.server.yml logs --tail=200 lfm-vllm >&2 || true
+    docker compose -f "$SERVER_COMPOSE_FILE" logs --tail=200 lfm-vllm >&2 || true
     printf '[server][error] health check timeout sau %ss\n' "$HEALTH_TIMEOUT_S" >&2
     exit 1
   fi
@@ -61,7 +62,7 @@ cat <<EOF
 Server da san sang.
 
 Logs:
-docker compose -f docker-compose.server.yml logs -f lfm-vllm
+docker compose -f $SERVER_COMPOSE_FILE logs -f lfm-vllm
 
 Benchmark:
 . .venv/bin/activate

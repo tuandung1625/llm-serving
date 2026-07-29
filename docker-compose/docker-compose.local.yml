@@ -18,7 +18,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./model:/model:ro
+      - ../model:/model:ro
     shm_size: "2g"
     cpus: 3.0
     mem_limit: 8g
