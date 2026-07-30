@@ -1,0 +1,58 @@
+services:
+  model:
+    image: ${VLLM_IMAGE:-vllm/vllm-openai:nightly}
+    entrypoint: [python3, -m, vllm.entrypoints.openai.api_server]
+    command:
+      # Level5 12: gpu_memory_utilization=0.95, tokens4096, stream_interval=1.
+      # Tests whether extra KV cache reduces the official failed_count=6.
+      # If startup OOM or CUDA graph capture OOM appears, fall back to 0.92.
+      - --model=/model
+      - --served-model-name=LFM2.5-1.2B-Instruct
+      - --host=0.0.0.0
+      - --port=8000
+      - --dtype=bfloat16
+      - --quantization=fp8
+      - --kv-cache-dtype=auto
+      - --tensor-parallel-size=1
+      - --gpu-memory-utilization=0.95
+      - --max-model-len=32768
+      - --max-num-seqs=32
+      - --max-num-batched-tokens=4096
+      - --enable-prefix-caching
+      - --mamba-cache-mode=align
+      - --mamba-cache-dtype=auto
+      - --enable-chunked-prefill
+      - --async-scheduling
+      - --performance-mode=interactivity
+      - --prefix-caching-hash-algo=sha256
+      - --block-size=128
+      - --mamba-block-size=256
+      - --prefix-match-unit=128
+      - --stream-interval=1
+      - --no-enable-log-requests
+      - --disable-log-stats
+    environment:
+      OMP_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+      TOKENIZERS_PARALLELISM: "false"
+      PYTHONUNBUFFERED: "1"
+      VLLM_USAGE_STATS: "0"
+      HF_HUB_OFFLINE: "1"
+      TRANSFORMERS_OFFLINE: "1"
+    ports: ["8000:8000"]
+    shm_size: "2g"
+    healthcheck:
+      test:
+        - CMD
+        - python3
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5).read()"
+      interval: 10s
+      timeout: 5s
+      retries: 60
+      start_period: 300s
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - {driver: nvidia, count: 1, capabilities: [gpu]}
