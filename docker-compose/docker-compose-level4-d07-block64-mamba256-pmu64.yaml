@@ -1,0 +1,41 @@
+services:
+  model:
+    image: vllm/vllm-openai:nightly
+    entrypoint: [python3, -m, vllm.entrypoints.openai.api_server]
+    command:
+      # Level4 D7: block/cache granularity block64-mamba256-pmu64.
+      # Block/cache granularity sweep with stream_interval=1.
+      # If vLLM rejects a value at startup, mark that run invalid and move on.
+      - --model=/model
+      - --served-model-name=LFM2.5-1.2B-Instruct
+      - --host=0.0.0.0
+      - --port=8000
+      - --dtype=bfloat16
+      - --quantization=fp8
+      - --kv-cache-dtype=auto
+      - --tensor-parallel-size=1
+      - --gpu-memory-utilization=0.92
+      - --max-model-len=32768
+      - --max-num-seqs=32
+      - --max-num-batched-tokens=12288
+      - --enable-prefix-caching
+      - --mamba-cache-mode=align
+      - --mamba-cache-dtype=auto
+      - --enable-chunked-prefill
+      - --async-scheduling
+      - --performance-mode=interactivity
+      - --prefix-caching-hash-algo=sha256
+      - --block-size=64
+      - --mamba-block-size=256
+      - --prefix-match-unit=64
+      - --stream-interval=1
+      - --no-enable-log-requests
+      - --disable-log-stats
+    environment: {OMP_NUM_THREADS: "1", MKL_NUM_THREADS: "1", TOKENIZERS_PARALLELISM: "false", PYTHONUNBUFFERED: "1"}
+    ports: ["8000:8000"]
+    shm_size: "2g"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - {driver: nvidia, count: 1, capabilities: [gpu]}
